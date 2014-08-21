@@ -9,9 +9,11 @@ declare -i bird_pos_x=3
 declare -i wall_pos_y=0
 declare -i wall_pos_x=0
 
-declare -ri fps=20
+declare -ri fps=60
+declare -ri gravity_fps=5
 declare -i score=0
 declare -i last_update=0
+declare -i gravity_last_update=0
 
 #-------------------------
 # HELPERS
@@ -83,7 +85,12 @@ function update() {
     fi
 
     #Oh damn gravity
-    #let bird_pos_y++
+    current_time=$( perl -MTime::HiRes -e 'print int(1000 * Time::HiRes::gettimeofday),"\n"' )
+    gravity_elapsed_time=$(($current_time - $gravity_last_update))
+    if [[ $gravity_last_update -eq 0 || $gravity_elapsed_time -gt $(( 1000 / $gravity_fps )) ]]; then
+        let bird_pos_y++
+        gravity_last_update=$( perl -MTime::HiRes -e 'print int(1000 * Time::HiRes::gettimeofday),"\n"' )
+    fi
 }
 
 function addWall() {
@@ -110,8 +117,7 @@ while ! $quit; do
         case $keypressed in
             "q") quit=true ;;
             "a") addWall ;;
-            "s") let bird_pos_y++ ;;
-            "w") let bird_pos_y-- ;;
+            "w") let bird_pos_y-=2 ;;
 
             #Oh damn gravity
             ##*) let bird_pos_y++ ;;
