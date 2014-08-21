@@ -9,7 +9,34 @@ declare -i bird_pos_x=3
 declare -i wall_pos_y=0
 declare -i wall_pos_x=0
 
+declare -ri fps=20
 declare -i score=0
+declare -i last_update=0
+
+#-------------------------
+# HELPERS
+#-------------------------
+#COLOR:
+#How to use: echo $(color red "Some error in red")
+function color() {
+    local color=${1}
+    shift
+    local text="${@}"
+
+    case ${color} in
+        red    ) tput setaf 1 ;;
+        green  ) tput setaf 2 ;;
+        yellow ) tput setaf 3 ;;
+        blue   ) tput setaf 4 ;;
+        pink   ) tput setaf 5 ;;
+        cyan   ) tput setaf 6 ;;
+        grey   ) tput setaf 7 ;;
+    esac
+
+    echo -en "${text}"
+    tput sgr0
+}
+#-------------------------
 
 function draw() {
     printf "+------------------------------+\n"
@@ -17,9 +44,9 @@ function draw() {
         printf "|"
         for X in $(seq 1 $width); do
             if [[ $bird_pos_x -eq $X && $bird_pos_y -eq $Y ]]; then
-                printf "*";
+                echo -en "\033[96m*\033[0m";
             elif [[ $wall_pos_y -ne $Y && $wall_pos_x -eq $X ]]; then
-                printf "#";
+                echo -en "\033[92m#\033[0m";
             else
                 printf " ";
             fi
@@ -27,14 +54,14 @@ function draw() {
         printf "|\n"
     done
     printf "+------------------------------+\n"
-    printf "SCORE: $score\n"
+    echo "SCORE: "$(color cyan $score)
 }
 
 function update() {
     #check bird boundaries
     if [[ $bird_pos_y -gt $height || $bird_pos_y -lt 1 ]]; then
         quit=true
-        printf "OFF LIMIT\n"
+        echo $(color red "OFF LIMIT")
     fi
 
     #move the wall
@@ -47,7 +74,7 @@ function update() {
 
     if [[ $bird_pos_x -eq $wall_pos_x && $bird_pos_y -ne $wall_pos_y ]]; then
         quit=true
-        printf "YOU DIED\n"
+        echo $(color red "YOU DIED")
     fi
 
     #Add a point when bird successfuly pass a wall
@@ -73,19 +100,29 @@ addWall
 
 #main loop
 while ! $quit; do
-    sleep 0.1
+    current_time=$( perl -MTime::HiRes -e 'print int(1000 * Time::HiRes::gettimeofday),"\n"' )
+    elapsed_time=$(($current_time - $last_update))
 
-    read keypressed
-    case $keypressed in
-        "q") quit=true ;;
-        "a") addWall ;;
-        "s") let bird_pos_y++ ;;
-        "w") let bird_pos_y-- ;;
-    esac
 
-    clear
-    update
-    draw
+    if [[ $last_update -eq 0 || $elapsed_time -gt $(( 1000 / $fps )) ]]; then
+
+        read keypressed
+        case $keypressed in
+            "q") quit=true ;;
+            "a") addWall ;;
+            "s") let bird_pos_y++ ;;
+            "w") let bird_pos_y-- ;;
+
+            #Oh damn gravity
+            ##*) let bird_pos_y++ ;;
+        esac
+
+        clear
+        update
+        draw
+
+        last_update=$( perl -MTime::HiRes -e 'print int(1000 * Time::HiRes::gettimeofday),"\n"' )
+    fi
 done
 
 if [ -t 0 ]; then
