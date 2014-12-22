@@ -10,7 +10,7 @@ declare -i wall_pos_y=0
 declare -i wall_pos_x=0
 
 declare -ri fps=60
-declare -ri gravity_fps=5
+declare -ri gravity_fps=3
 declare -i score=0
 declare -i last_update=0
 declare -i gravity_last_update=0
@@ -59,6 +59,12 @@ function draw() {
     echo "SCORE: "$(color cyan $score)
 }
 
+function clearScreen () {
+    for Y in $(seq 1 $(($height + 3))); do
+        tput cuu1
+    done
+}
+
 function update() {
     #check bird boundaries
     if [[ $bird_pos_y -gt $height || $bird_pos_y -lt 1 ]]; then
@@ -102,6 +108,8 @@ if [ -t 0 ]; then
     stty -echo -icanon time 0 min 0
 fi;
 
+clear
+
 #Init wall
 addWall
 
@@ -123,7 +131,7 @@ while ! $quit; do
             ##*) let bird_pos_y++ ;;
         esac
 
-        clear
+        clearScreen
         update
         draw
 
