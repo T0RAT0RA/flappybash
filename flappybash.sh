@@ -40,6 +40,16 @@ function color() {
 }
 #-------------------------
 
+function usage {
+    echo "bash $0"
+    echo "Bash version of Flappy Bird"
+    echo "Use W key to fly"
+    echo " "
+    echo "Examples:"
+    echo "  bash $0"
+    exit 0
+}
+
 function draw() {
     printf "+------------------------------+\n"
     for Y in $(seq 1 $height); do
@@ -103,10 +113,17 @@ function addWall() {
     wall_pos_y=$(($RANDOM%$height))
     wall_pos_x=$width
 }
+#-------------------------
+# MAIN PROGRAM STARTS HERE
+#-------------------------
+if [[ "/bin/bash" != $BASH ]]; then
+    echo $(color red "Use bash to run this program.")
+    usage
+fi
 
 if [ -t 0 ]; then
     stty -echo -icanon time 0 min 0
-fi;
+fi
 
 clear
 
