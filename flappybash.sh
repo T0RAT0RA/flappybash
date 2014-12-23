@@ -66,11 +66,14 @@ function draw() {
         printf "|\n"
     done
     printf "+------------------------------+\n"
-    echo "SCORE: "$(color cyan $score)
+    echo "SCORE: "$(color pink $score)
+    echo "KEYS : "
+    echo "  "$(color green "W")": fly"
+    echo "  "$(color green "Q")": quit"
 }
 
 function clearScreen () {
-    for Y in $(seq 1 $(($height + 3))); do
+    for Y in $(seq 1 $(($height + 6))); do
         tput cuu1
     done
 }
@@ -79,6 +82,7 @@ function update() {
     #check bird boundaries
     if [[ $bird_pos_y -gt $height || $bird_pos_y -lt 1 ]]; then
         quit=true
+        tput el
         echo $(color red "OFF LIMIT")
     fi
 
@@ -92,6 +96,7 @@ function update() {
 
     if [[ $bird_pos_x -eq $wall_pos_x && $bird_pos_y -ne $wall_pos_y ]]; then
         quit=true
+        tput el
         echo $(color red "YOU DIED")
     fi
 
